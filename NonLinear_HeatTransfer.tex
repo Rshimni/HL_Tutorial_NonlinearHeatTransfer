@@ -92,7 +92,7 @@ The initial condition is assumed to be
 	\end{aligned}
 \end{equation}
 
-This is essentially a one-dimensional problem. We choose a uniform mesh of $4 \times 2Q9$ to model the domain, $\Delta t = 0.005$ and we use Backward temporal approximation scheme.
+This is essentially a one-dimensional problem and $\Delta t = 0.005$ and we use Backward temporal approximation scheme.
 \section{Weak Form} \label{sec: WF}
 The starting point for the development of the finite element models of Eq. (\ref{eq1}) is their weak forms. By considering $\Delta t = t^{n+1} - t^{n}$, the $\alpha$-family approximation for the temperature field takes the following form
 \begin{equation}\label{eq5}
@@ -204,18 +204,29 @@ The elemental representation of the vector and matrix required for filling funct
 \end{equation}
 Note that $\mathrm{d}A=\mathrm{d}x_{1} \times \mathrm{d}x_{2}=jac \ \mathrm{d}\xi \mathrm{d}\eta$, which $jac=\mathrm{det}(Jacobian)$.
 \section{Choice of Elements} \label{sec: coe}
-Thus, for this simple problem every Lagrange and serendipity family of interpolation functions are admissible for the interpolation of the temperature field, our choice is would be linear quadrilateral element.Linear  Quadrilateral Elements is the simplest quadrilateral element consists of four nodes. The associated interpolation functions for geometry and ﬁeld variables are bilinear.
+Thus, for this simple problem every Lagrange and serendipity family of interpolation functions are admissible for the interpolation of the temperature field, our choice is would be quadratic quadrilateral elements consist of $9$ nodes. The shape function with respect to the reference element are given for the vertex nodes ($I = 1, 2, 3, 4$):
 \begin{equation}\label{eq18}
 	\begin{aligned}[b]
-		\boldsymbol{\Phi}_{I}(\xi, \eta) = \frac{1}{4}(1+\xi_I\xi)(1+\eta_I\eta) \quad (I \ \text{from} \ 1 \ \text{to} \ 4)
+		\boldsymbol{\Phi}_{I}(\xi, \eta) = \frac{1}{4}(\xi^2+\xi_I\xi)(\eta^2+\eta_I\eta)
 	\end{aligned}
 \end{equation}
-
+-the middle edge nodes ($I = 5, 6, 7, 8$):
+\begin{equation}\label{eq19}
+	\begin{aligned}[b]
+		\boldsymbol{\Phi}_{I}(\xi, \eta) = \frac{1}{2}\xi_I^2(\xi^2+\xi_I\xi)(1-\eta^2) + \frac{1}{2}\eta_I^2(\eta^2+\eta_I\eta)(1-\xi^2)
+	\end{aligned}
+\end{equation}
+-and the middle node ($I = 9$):
+\begin{equation}\label{eq20}
+	\begin{aligned}[b]
+		\boldsymbol{\Phi}_{I}(\xi, \eta) = (1-\xi^2)(1-\eta^2)
+	\end{aligned}
+\end{equation}
 where $\xi_{I}$ and $\eta_{I}$ are the corner coordinates at element $T$ in domain of $\Omega_{T} \in (-1,1)^2$. As it shown in Figure \ref{fig_el} we are using $2 \times 2$ Gauss–Legendre quadrature integration.
 \begin{figure}[htbp]
 	\centering
 	\input{Figures/element.tex}
-	\caption{Linear quadrilateral element used for finite element model.}
+	\caption{Quadratic quadrilateral element used for finite element model.}
 	\label{fig_el}
 \end{figure}
 We also chose a uniform mesh of size $10 \times 10$ to model the domain of our problem.
