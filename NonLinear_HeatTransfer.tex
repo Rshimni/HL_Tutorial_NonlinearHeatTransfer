@@ -532,7 +532,7 @@ void LS(hiperlife::FillStructure& fillStr);
 #endif
 
 \end{lstlisting}
-\subsubsection{AuxHeatTransferNonL} \label{sec: a.cpp}
+\subsubsection{AuxHeatTransferNonL.cpp} \label{sec: a.cpp}
 \begin{lstlisting}
 // Header to auxiliary functions
 #include "AuxHeatTransferNonL.h"
@@ -566,9 +566,9 @@ void LS(hiperlife::FillStructure& fillStr)
 	double k0{0.2};
 	double beta{0.002};
 	
-	//-------------------------------------------------------------------------------//
-	// ------------------------------- INPUT DATA -----------------------------------//
-	//-------------------------------------------------------------------------------//
+	//---------------------------------------------------------------------------//
+	// ------------------------------- INPUT DATA -------------------------------//
+	//---------------------------------------------------------------------------//
 	
 	// Dimensions
 	SubFillStructure& subFill = fillStr["dofHand"];
@@ -582,8 +582,7 @@ void LS(hiperlife::FillStructure& fillStr)
 	wrapper<double,1> nborDOFs0(subFill.nborDOFs0.data(),eNN);
 	
 	// Shape functions and derivatives at Gauss points
-	
-	double jac; // dx * dy = jac * dxi deta
+	double jac;
 	wrapper<double,1>  bf(subFill.nborBFs(), eNN); //basis function
 	tensor<double,2> Dbf(eNN,pDim);                //gradient of basis function
 	GlobalBasisFunctions::gradients(Dbf, jac, subFill);
@@ -599,40 +598,32 @@ void LS(hiperlife::FillStructure& fillStr)
 	//-------------------------------------------------------------------------------//
 	
 	// temp
-	double theta = bf*nborDOFs;
-	double theta0 = bf*nborDOFs0;
-	// grad temp
-	tensor<double,1> grad_t(pDim);
-	tensor<double,1> grad_t0(pDim);
-	for (int i = 0; i < eNN; i++)
-	{
-		for (int d = 0; d < pDim; d++)
-		{
-			grad_t(d) += Dbf(i,d)*nborDOFs(i);
-			grad_t0(d) += Dbf(i,d)*nborDOFs0(i);
-		}
-	}
+	double theta = product(bf, nborDOFs, {{0, 0}});
+	double theta0 = product(bf, nborDOFs0, {{0, 0}});
+	
+	// Temperature Gradient
+	tensor<double, 1> grad_t = product(Dbf, nborDOFs, {{0,0}});
+	tensor<double, 1> grad_t0 = product(Dbf, nborDOFs0, {{0,0}});
+	
+	// (bf) * (bf)
+	tensor<double, 2> bfbf = outer(bf, bf);
+	
 	// (gradient of the bf) *  (gradient of the bf)
-	tensor<double,2> DbfDbf = product(Dbf,Dbf,{{1,1}});
-	// (gradient of the bf) *  (gradient of theta)
-	tensor<double,1> DtDbf = product(grad_t,Dbf,{{0,1}});
-	tensor<double,1> Dt0Dbf = product(grad_t0,Dbf,{{0,1}});
+	tensor<double, 2> DbfDbf = product(Dbf, Dbf, {{1, 1}});
+	
+	// (gradient of the bf) *  (gradient of t)
+	tensor<double, 1> DtDbf = product(grad_t, Dbf, {{0, 1}});
+	tensor<double, 1> Dt0Dbf = product(grad_t0, Dbf, {{0, 1}});
+	tensor<double, 2> bfDbf = outer(DtDbf, bf);
 	//-------------------------------------------------------------------------------//
 	//----------------------- Filling Hessain and Jacobian --------------------------//
 	//-------------------------------------------------------------------------------// 
-	for (int i = 0; i < eNN; i++)            //i for basis functions
-	{
-		// Fill Jacobian
-		Bk(i) += jac * (bf(i)*theta + k0*delta_t*alpha*DtDbf(i)*(1.0+2.0*beta*theta) 
-		- bf(i)*theta0 - k0*delta_t*(1.0-alpha)*Dt0Dbf(i)*(1.0+2.0*beta*theta0));
-		for (int j = 0; j < eNN; j++)       //j for variable.
-		{
-			// Fill Hessian
-			Ak(i,j) += jac * (bf(i)*bf(j) + delta_t*alpha*k0
-			* (DbfDbf(i,j) * (1+2.0*beta*theta) + 2.0*beta*bf(j)*DtDbf(i)));
-		}
-	}
+	
+	Bk += jac * (bf*theta + delta_t*alpha*k0*(1.0 + beta*theta)*DtDbf -
+	             bf*theta0 + delta_t*(1.0-alpha)*k0*(1.0 + beta*theta0)*Dt0Dbf);
+	Ak += jac * (bfbf + k0*delta_t*alpha*(beta*bfDbf + (1.0 + beta*theta)*DbfDbf));
 }
+
 
 \end{lstlisting}
 
