@@ -103,14 +103,14 @@ The starting point for the development of the finite element models of Eq. (\ref
 The time derivatives of $\theta$ on the right hand side of this equation can be calculated from Eq. (\ref{eq1}) for each step, like this 
 \begin{equation}\label{eq6}
 	\begin{aligned}
-		\{\theta_t\}^{n+1} &= \nabla^2(\{\kappa \theta\}^{n+1})\thinspace, \\
-		\{\theta_t\}^{n} &= \nabla^2 (\{\kappa \theta\}^{n})\thinspace. \
+		\{\theta_t\}^{n+1} &= \nabla(\kappa\nabla\{ \theta\}^{n+1})\thinspace, \\
+		\{\theta_t\}^{n} &= \nabla (\kappa\nabla\{ \theta\}^{n})\thinspace. \
 	\end{aligned}
 \end{equation}
 combining these two equations gives us
 \begin{equation}\label{eq7}
 	\begin{aligned}
-		\{\theta\}^{n+1} -\Delta t\alpha[\nabla^2(\{\kappa \theta\}^{n+1})] - \{\theta\}^n - \Delta t(1 - \alpha)[\nabla^2(\{\kappa \theta\}^{n})]=0\thinspace.
+		\{\theta\}^{n+1} -\Delta t\alpha[\nabla(\kappa \nabla\{\theta\}^{n+1})] - \{\theta\}^n - \Delta t(1 - \alpha)[\nabla(\kappa \nabla\{\theta\}^{n})]=0\thinspace.
 	\end{aligned}
 \end{equation}
 The variation formulation of our model problem can be introduced as find $\theta \in V$ such that
@@ -122,7 +122,7 @@ The variation formulation of our model problem can be introduced as find $\theta
 where
 \begin{equation}\label{eq9}
 	\begin{aligned}
-		\mathcal{F}(\theta; v) =\int_{\Omega} v\{\theta\}^{n+1} -\Delta t\alpha v[\nabla^2(\{\kappa \theta\}^{n+1})] - v\{\theta\}^n - \Delta t(1 - \alpha)v[\nabla^2(\{\kappa \theta\}^{n})]\ \mathrm{d}\Omega \thinspace .
+		\mathcal{F}(\theta; v) =\int_{\Omega} v\{\theta\}^{n+1} -\Delta t\alpha v\nabla \cdot(\kappa \nabla\{ \theta\}^{n+1}) - v\{\theta\}^n - \Delta t(1 - \alpha)v\nabla \cdot(\kappa \nabla \{\theta\}^{n})\ \mathrm{d}\Omega \thinspace .
 	\end{aligned}
 \end{equation}
 and
@@ -135,7 +135,7 @@ and
 The discrete problem arises as usual by restricting $V$ and $\hat{V}$ to a pair of discrete spaces.with $\theta = \sum_{j=1}^N \theta_j \phi_j$. Since $\mathcal{F}$ is a nonlinear function of $\theta$, the variational statement gives rise to a system of nonlinear algebraic equations. applying integration by part, Using Gauss’s theorem and also defining  heat flux density as $q_{\mathfrak{n}} =  [\nabla(\kappa\theta)]\cdot\mathfrak{n}$, the weak form takes the following form
 \begin{equation}\label{eq11}
 	\begin{aligned}
-		\mathcal{F}(\theta; v) =& \int_{\Omega} v \{\theta\}^{n+1} + \Delta t \alpha\nabla v \nabla(\{\kappa \theta\}^{n+1}) \ \mathrm{d} \Omega - \int_{\Omega} v\{\theta\}^{n} + \Delta t (1-\alpha) \nabla v\nabla(\{\kappa \theta\}^{n}) \ \mathrm{d} \Omega \\
+		\mathcal{F}(\theta; v) =& \int_{\Omega} v \{\theta\}^{n+1} + \Delta t \alpha\kappa\nabla v \nabla(\{ \theta\}^{n+1}) \ \mathrm{d} \Omega - \int_{\Omega} v\{\theta\}^{n} + \Delta t (1-\alpha) \kappa\nabla v \nabla(\{\theta\}^{n}) \ \mathrm{d} \Omega \\
 		&- v \Delta t \int_{\Gamma}  \alpha v q^{n+1}_{\mathfrak{n}} + (1-\alpha)v q^{n}_{\mathfrak{n}} \ \mathrm{d} \Gamma\thinspace.
 	\end{aligned}
 \end{equation}
@@ -143,81 +143,78 @@ Applying boundary conditions ($\Gamma = \Gamma_N \cup \Gamma_D$):
 \begin{equation}\label{eq12}
 	\begin{aligned}
 		v= 0 \quad &\text{ on } \Gamma_D\thinspace, \\
-		\nabla [\kappa\theta] \cdot n = 0 \quad &\text{ on } \Gamma_N \thinspace.
+		\kappa\nabla [\theta] \cdot n = 0 \quad &\text{ on } \Gamma_N \thinspace.
 	\end{aligned}
 \end{equation}
 
 we get the final form for $\mathcal{F}$
 \begin{equation}\label{eq13}
 	\begin{aligned}
-		\mathcal{F}(\theta; v) =& \int_{\Omega} v \{\theta\}^{n+1} + \Delta t \alpha\nabla v \nabla(\{\kappa \theta\}^{n+1}) \ d \Omega - \int_{\Omega} v\{\theta\}^{n} + \Delta t (1-\alpha) \nabla v\nabla(\{\kappa \theta\}^{n}) \ \mathrm{d} \Omega\thinspace.
+		\mathcal{F}(\theta; v) =& \int_{\Omega} v \{\theta\}^{n+1} + \Delta t \alpha\kappa\nabla v \nabla(\{ \theta\}^{n+1}) \ d \Omega - \int_{\Omega} v\{\theta\}^{n} + \Delta t (1-\alpha) \kappa\nabla v\nabla(\{ \theta\}^{n}) \ \mathrm{d} \Omega\thinspace.
 	\end{aligned}
 \end{equation}
 In order to linearize our discretized nonlinear PDE problem, we may use Newton’s method. which for the system $\mathcal{F}_i(\Theta_1,\ldots,\Theta_j)=0$ it can be formulated by the first terms of a Taylor series approximation for the value of the variational as
-\begin{equation}\label{eq11}
+\begin{equation}\label{eq14}
 	\begin{aligned}
 		\sum_{j=1}^N {\partial \over\partial \Theta_j} \mathcal{F}_i(\Theta_1^k,\ldots,\Theta_N^k)\delta \Theta_j &= -\mathcal{F}_i(\Theta_1^k,\ldots,\Theta_N^k),\quad i=1, \ldots ,N,\\ \Theta_j^{k+1} &= \Theta_j^k + \delta \Theta_j,\quad j=1, \ldots ,N\thinspace.
 	\end{aligned}
 \end{equation}
 where $k$ is an iteration index and $n$ is time step. An initial guess $\theta^0$ must be provided to start the algorithm.
 We need to compute the $\partial \mathcal{F}_i/\partial \Theta_j$ and the right-hand side vector $-\mathcal{F}_i$. Our present problem has $\mathcal{F}_i$ given by above. the Hessian is given by
-\begin{equation}\label{eq11}
+\begin{equation}\label{eq15}
 	\begin{aligned}
-		\mathcal{J}(\theta;v)= \int_{\Omega} v \frac{\partial \theta^{n+1}}{\partial \theta_j} + \Delta t \alpha  \nabla v (\frac{\partial \kappa}{\partial \theta_j}\theta^{n+1} + \kappa\frac{\partial \theta^{n+1}}{\partial \theta_j}) \ \mathrm{d} \Omega
+		\mathcal{J}(\theta;v)= \int_{\Omega} v \frac{\partial \{\theta\}^{n+1}}{\partial \theta_j} + \Delta t \alpha  \nabla v \Bigg[\frac{\partial \kappa}{\partial \theta_j}\nabla \{\theta\}^{n+1} +  \kappa\nabla \frac{\partial \{\theta\}^{n+1}}{\partial \theta_j}\Bigg] \ \mathrm{d} \Omega
 	\end{aligned}
 \end{equation}
 \section{Finite Element Model} \label{sec: fem}
 Since we are developing the Ritz-Galerkin finite element model, the choice of the weight functions is restricted to the spaces of approximation functions used for the solution field. Suppose that the dependent variable $\theta$ approximated by expansions of the form
-\begin{equation}\label{eq11}
+\begin{equation}\label{eq16}
 	\begin{aligned}
 		\theta(\mathbf{x}, t)= \sum_{m=1}^{M} \phi_m(\mathrm{x}) \mathbf{\theta}^m(t) = \boldsymbol{\Phi}^T\boldsymbol{\theta} \thinspace,
 	\end{aligned}
 \end{equation}
 Lets rewrite this equation for known and unknown variables.
-\begin{equation}\label{eq11}
+\begin{equation}\label{eq17}
 	\begin{aligned}
-		\mathcal{J}(\theta;\phi_j,\phi_i)&= \int_{\Omega} \phi_i \phi_j + \Delta t \alpha \kappa_0 \nabla \phi_i (\nabla \phi_j + 2 \beta (\phi_j \nabla \theta ^{n+1,k}+\theta^{n+1,k}\nabla \phi_j) \ \mathrm{d} \Omega \\
-		&= \phi_i \phi_j + \Delta t \alpha \kappa_0[\nabla \phi_i\nabla \phi_j + 2 \beta(\nabla \phi_i\phi_j  \nabla \theta^{n+1,k} + \nabla \phi_i\nabla \phi_j\theta^{n+1,k} ) ]\mathrm{d} \Omega\thinspace.
+		\mathcal{J}(\theta;\phi)&= \int_{\Omega} \phi \phi^T + \Delta t \alpha \kappa_0 \nabla \phi \Big[\beta \phi^T \nabla \{\theta\} ^{n+1} + (1+\beta \{\theta\}^{n+1}) \nabla \phi^T\Big]\mathrm{d} \Omega\thinspace.
 	\end{aligned}
 \end{equation}
 
 The above equations can be written symbolically in matrix form as we are going to solve it, 
-\begin{equation}\label{eq12}
+\begin{equation}\label{eq18}
 	\begin{aligned}
-		\sum_j \mathcal{J}(\theta;\phi_j,\phi_i)\{\delta \theta_j\}^{n+1} = -\mathcal{F}(\theta;\phi_i)\thinspace.
+		\sum_j \mathcal{J}(\theta;\phi)\{\delta \theta_j\}^{n+1} = -\mathcal{F}(\theta;\phi)\thinspace.
 	\end{aligned}
 \end{equation}
-where $\mathcal{F}(\theta;\phi_i)$ is
-\begin{equation}\label{eq12}
+where $\mathcal{F}(\theta;\phi)$ is
+\begin{equation}\label{eq19}
 	\begin{aligned}
-		\mathcal{F}(\theta;\phi_i)=& \int_{\Omega} \phi_i \theta^{n+1,k} + \kappa_0 \Delta t \alpha \nabla \phi_i [\nabla \theta^{n+1,k}+2\beta \nabla \theta^{n+1,k}\theta^{n+1,k}]\mathrm{d} \Omega \\
-		&-\int_{\Omega} \phi_i \theta^{n,k} + \kappa_0 \Delta t (1-\alpha) \nabla \phi_i [\nabla \theta^{n,k}+2\beta \nabla \theta^{n,k}\theta^{n,k}]\mathrm{d} \Omega\thinspace.
+		\mathcal{F}(\theta;\phi)= \int_{\Omega} \phi \{\theta\}^{n+1} + \kappa_0 \Delta t \alpha (1+\beta \{\theta\}^{n+1})\nabla \phi \nabla \{\theta\}^{n+1} - \phi \theta^{n} + \kappa_0 \Delta t \alpha (1+\beta \{\theta\}^{n})\nabla \phi \nabla \{\theta\}^{n}\mathrm{d} \Omega\thinspace.
 	\end{aligned}
 \end{equation}
 The elemental representation of the vector and matrix required for filling function in hiperlife would be like
-\begin{equation}\label{eq13}
+\begin{equation}\label{eq20}
 	\begin{aligned}[b]
-		Ak (i,j) =& jac \times [\phi_i \phi_j + \Delta t \alpha \kappa_0[\nabla \phi_i\nabla \phi_j + 2 \beta(\nabla \phi_i\phi_j  \nabla \theta^{n+1,k} + \nabla \phi_i\nabla \phi_j\theta^{n+1,k} ) ]]\thinspace, \\
-		Bk (i) =& jac \times [(\phi_i \theta^{n+1,k} + \kappa_0 \Delta t \alpha \nabla \phi_i \nabla \theta^{n+1,k} [1+2\beta\theta^{n+1,k}]) \\
-		&- (\phi_i \theta^{n,k} + \kappa_0 \Delta t (1-\alpha) \nabla \phi_i\nabla \theta^{n,k} [1+2\beta \theta^{n,k}])]\thinspace.
+		Ak (i,j) =& jac \times \Big[\phi_i \phi_j + \Delta t \alpha \kappa_0 \nabla \phi_i \Big(\beta \phi_j \nabla \{\theta\} ^{n+1} + (1+\beta \{\theta\}^{n+1}) \nabla \phi_j\Big)\Big]\thinspace, \\
+		Bk (i) =& jac \times \Big[\phi_i \{\theta\}^{n+1} + \kappa_0 \Delta t \alpha (1+\beta \{\theta\}^{n+1})\nabla \phi_i \nabla \{\theta\}^{n+1} - \phi_i \theta^{n} + \kappa_0 \Delta t \alpha (1+\beta \{\theta\}^{n})\nabla \phi_i \nabla \{\theta\}^{n}\Big]\thinspace.
 	\end{aligned}
 \end{equation}
 Note that $\mathrm{d}A=\mathrm{d}x_{1} \times \mathrm{d}x_{2}=jac \ \mathrm{d}\xi \mathrm{d}\eta$, which $jac=\mathrm{det}(Jacobian)$.
 \section{Choice of Elements} \label{sec: coe}
 Thus, for this simple problem every Lagrange and serendipity family of interpolation functions are admissible for the interpolation of the temperature field, our choice is would be quadratic quadrilateral elements consist of $9$ nodes. The shape function with respect to the reference element are given for the vertex nodes ($I = 1, 2, 3, 4$):
-\begin{equation}\label{eq18}
+\begin{equation}\label{eq21}
 	\begin{aligned}[b]
 		\boldsymbol{\Phi}_{I}(\xi, \eta) = \frac{1}{4}(\xi^2+\xi_I\xi)(\eta^2+\eta_I\eta)
 	\end{aligned}
 \end{equation}
 -the middle edge nodes ($I = 5, 6, 7, 8$):
-\begin{equation}\label{eq19}
+\begin{equation}\label{eq22}
 	\begin{aligned}[b]
 		\boldsymbol{\Phi}_{I}(\xi, \eta) = \frac{1}{2}\xi_I^2(\xi^2+\xi_I\xi)(1-\eta^2) + \frac{1}{2}\eta_I^2(\eta^2+\eta_I\eta)(1-\xi^2)
 	\end{aligned}
 \end{equation}
 -and the middle node ($I = 9$):
-\begin{equation}\label{eq20}
+\begin{equation}\label{eq23}
 	\begin{aligned}[b]
 		\boldsymbol{\Phi}_{I}(\xi, \eta) = (1-\xi^2)(1-\eta^2)
 	\end{aligned}
